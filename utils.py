@@ -49,3 +49,19 @@ def save_history(history, canterpillar_name):
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     plt.savefig(canterpillar_name+".png")
+
+def gpu_cpu_test()
+	#---GPU/CPU test and rate status-----
+#Also useful to see computation rate of device
+	import tensorflow as tf
+	print ("TF version - "+ tf.__version__)
+	if tf.test.gpu_device_name():
+		print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
+		print("---------- -----------")
+	else:
+		print("IMPORTANT: Computing without GPU here.")
+		print("---------- -----------")
+
+	from tensorflow.python.client import device_lib
+	print("Using device info: ")
+	print(device_lib.list_local_devices())
