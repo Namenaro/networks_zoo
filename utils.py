@@ -41,14 +41,18 @@ def reshape_ecg_tensor(ecg):
     print ("форма тезора с экг (после напильника) =" + str(ecg))
     return ecg
 
-def save_history(history, canterpillar_name):
+
+def save_history(history,caterpillar_name):
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.savefig(canterpillar_name+".png")
+    #caterpillar.save('ctp.h5')
+    #caterpillar.save_weights('ctp_weights.h5')
+    plt.savefig(caterpillar_name+".png")
+    
 
 def gpu_cpu_test():
 	#---GPU/CPU test and rate status-----
