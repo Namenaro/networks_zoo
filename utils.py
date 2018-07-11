@@ -50,7 +50,7 @@ def save_history(history, canterpillar_name):
     plt.legend(['train', 'test'], loc='upper left')
     plt.savefig(canterpillar_name+".png")
 
-def gpu_cpu_test()
+def gpu_cpu_test():
 	#---GPU/CPU test and rate status-----
 #Also useful to see computation rate of device
 	import tensorflow as tf
