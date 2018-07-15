@@ -3,6 +3,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #plt.xkcd()
+def get_ecg_test_sample(num_patient):
+    sample = x_test[num_patient,:,:,:]
+    print("форма тензора с экг: "+ str(sample.shape))
+    return sample
+
+def reshape_ecg_tensor(ecg):
+    # превратим (252, 1, 12) в (12, 252)
+    print ("форма тезора с экг =  " + str(ecg.shape))
+    ecg = ecg[:,0,:]
+    ecg = np.transpose(ecg)
+    print ("форма тезора с экг (после напильника) =" + str(ecg))
+    return ecg
 
 def draw_reconstruction_to_png(ecg_true, ecg_predicted, png_filename):
     """
@@ -33,15 +45,19 @@ def draw_reconstruction_to_png(ecg_true, ecg_predicted, png_filename):
 
     plt.savefig(png_filename+".png")
 
-def reshape_ecg_tensor(ecg):
-    # превратим (252, 1, 12) в (12, 252)
-    print ("форма тезора с экг =  " + str(ecg.shape))
-    ecg = ecg[:,0,:]
-    ecg = np.transpose(ecg)
-    print ("форма тезора с экг (после напильника) =" + str(ecg))
-    return ecg
 
 
+def show_reconstruction_by_ae(ecg_sample, name):
+    filepath = easygui.fileopenbox("выберите файл с обученной моделью .h5")
+    trained_model = load_model(filepath)
+
+    ecg_sample = np.array([ecg_sample])
+    prediction = trained_model.predict(ecg_sample)
+
+    draw_reconstruction_to_png(ecg_sample[0],prediction[0], name)
+
+
+    
 def save_history(history,caterpillar_name):
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
