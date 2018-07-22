@@ -13,7 +13,7 @@ from keras.layers import (
 
 from keras.layers import merge
 
-
+from keras.callbacks import TensorBoard
 from keras.models import Model
 from keras.losses import (
     mean_squared_error
@@ -32,7 +32,7 @@ from utils import (
     draw_reconstruction_to_png, save_history
 )
 
-ecg_segment_len = 252
+ecg_segment_len = 512
 n_channles = 12
 
 def prepare_data_for_canterpillar(segment_len=None):
@@ -65,7 +65,7 @@ def deconv_block(num_kernels, kernel_size, upsampling, name):
 
     return f
 
-def encoder(num_kernels_arr=[10, 15], kernels_sizes_arr=(5, 3), strides_arr=[1,1]):
+def encoder(num_kernels_arr=[10, 13], kernels_sizes_arr=(5, 3), strides_arr=[1,1]):
     def f(input):
         x = input
         for i in range(len(num_kernels_arr)):
@@ -76,7 +76,7 @@ def encoder(num_kernels_arr=[10, 15], kernels_sizes_arr=(5, 3), strides_arr=[1,1
         return x
     return f
 
-def decoder(num_kernels_arr=[15, 10, n_channles], kernels_sizes_arr=[3, 5, 1], upsemblings_arr=[1,2,2], names = ['bottleneck',None, None]):
+def decoder(num_kernels_arr=[13, 10, n_channles], kernels_sizes_arr=[3, 5, 1], upsemblings_arr=[1,2,2], names = ['bottleneck',None, None]):
     def f(input):
         x = input
         for i in range(len(num_kernels_arr)):
@@ -96,24 +96,6 @@ def canterpillar_net():
     model = Model(input, decoder()(code))
     return model
 
-def train_canterpillar(name):
-    model = canterpillar_net()
-    model.summary()
-    optimiser = sgd(momentum=0.9, nesterov=True)
-
-    model.compile(optimizer=optimiser,
-                 loss=mean_squared_error)
-
-
-    x_train, x_test = prepare_data_for_canterpillar(segment_len=ecg_segment_len)
-    history = model.fit(x=x_train, y=x_train,
-                       validation_data=(x_test, x_test),
-                        batch_size=20,
-                       epochs=50)
-
-    save_history(history, name)
-    model.save(name+'.h5')
-    return model
 
 def train_canterpillar_with_generator(name):
     model = canterpillar_net()
@@ -135,21 +117,25 @@ def train_canterpillar_with_generator(name):
     test_generator = ecg_batches_generator(segment_len=ecg_segment_len,
                                             batch_size=batch_size,
                                             ecg_dataset=x_test)
+    
+    tb_callback = TensorBoard(log_dir='./caterpillar_logs', histogram_freq=5, write_graph=True, write_grads=True)
+    y_test = next(test_generator)
 
     history = model.fit_generator(generator=train_generator,
                                   steps_per_epoch=steps_per_epoch,
                                   epochs=50,
-                                  validation_data=test_generator,
-                                  validation_steps=2)
+                                  validation_data=y_test,
+                                  validation_steps=2, callbacks = [tb_callback])
 
     save_history(history, name)
     model.save(name+'.h5')
     return model
 
+
 def show_reconstruction_by_ae(ecg_sample, name):
     filepath = easygui.fileopenbox("выберите файл с обученной моделью .h5")
     trained_model = load_model(filepath)
-
+    trained_model.summary()
     ecg_sample = np.array([ecg_sample])
     prediction = trained_model.predict(ecg_sample)
 
@@ -162,11 +148,10 @@ def get_ecg_test_sample(num_patient):
     return sample
 
 
-name = "zinger"
-#model = train_canterpillar(name)
-model = train_canterpillar_with_generator(name)
-#ecg_sample = get_ecg_test_sample(num_patient=0)
-#show_reconstruction_by_ae(ecg_sample, name)
+name = "mimino_ae"
+#model = train_canterpillar_with_generator(name)
+ecg_sample = get_ecg_test_sample(num_patient=29)
+show_reconstruction_by_ae(ecg_sample, name)
 
 
 
