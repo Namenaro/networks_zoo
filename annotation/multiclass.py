@@ -72,7 +72,6 @@ def eval_models_in_folder(num_pictures):
 
 def test_model_multimask(model, batch, name):
     """
-
     :param model: бученная модель
     :param batch: батч из тестовго генератора, (x, ann)
     :param name: имя для серии картинок
