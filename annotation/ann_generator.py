@@ -1,6 +1,4 @@
 import numpy as np
-from dataset_getter import prepare_data
-import pprint
 from utils import open_pickle
 import matplotlib.pyplot as plt
 
@@ -104,7 +102,7 @@ def get_mulimask_generator(segment_len, batch_size, dataset_in):
     """
     dataset_only_one_channel = extract_first_leads(dataset_in)
     dataset_shrinked = shrink_dataset(dataset_only_one_channel)
-    my_generator = annotated_generator(segment_len=segment_len, batch_size=batch_size, dataset_in=dataset_shrinked)
+    my_generator = annotated_multimask_generator(segment_len=segment_len, batch_size=batch_size, dataset_in=dataset_shrinked)
     return my_generator
 
 def TEST_all():
@@ -128,6 +126,47 @@ def draw_shrinked():
 
     plt.legend(loc=2)
     plt.savefig(figname)
+
+def annotated_multimask_generator(segment_len, batch_size, dataset_in):
+
+    """
+    ann_generator Для мултимасочной сегментации
+    """
+
+    # open_pickle находится в utils для компактности
+
+    ecg_dataset = np.array(dataset_in['x'])
+    ecg_annotations = np.array(dataset_in['ann'])
+
+    # отступ от начала и конца
+    offset = 700
+
+    ecg_dataset = np.swapaxes(ecg_dataset, 1, 2)
+    ecg_annotations = np.swapaxes(ecg_annotations, 1, 2)
+
+    starting_position = np.random.randint(offset, ecg_dataset.shape[1] - segment_len - offset)
+    ending_position = starting_position + segment_len
+    ecg_rand = np.random.randint(0, ecg_dataset.shape[0])
+
+    while True:
+        batch_x = ecg_dataset[ecg_rand: ecg_rand +1, starting_position:ending_position, :]
+        batch_ann = np.array([ecg_annotations[ecg_rand, starting_position:ending_position, :]])
+        for i in range(0, batch_size- 1):
+            starting_position = np.random.randint(offset, ecg_dataset.shape[1] - segment_len - offset)
+            ending_position = starting_position + segment_len
+            ecg_rand = np.random.randint(0, ecg_dataset.shape[0])
+            batch_x = np.concatenate(
+                (batch_x, ecg_dataset[ecg_rand:ecg_rand + 1, starting_position:ending_position, :]), 0)
+            batch_ann = np.concatenate(
+                (batch_ann, ecg_annotations[ecg_rand:ecg_rand + 1, starting_position:ending_position, :]), 0)
+        print(batch_x.shape, "batch_x shape")
+        print(batch_ann.shape, "batch_ann shape")
+        batch_ann = np.swapaxes(batch_ann, 1, 2)
+        yield (batch_x, batch_ann)
+
+
+
+
 
 
 if __name__ == "__main__":
