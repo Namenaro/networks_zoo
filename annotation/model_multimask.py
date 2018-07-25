@@ -55,7 +55,7 @@ def unet_multimask(seg_len):
     conv9 = Conv1D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge9)
     conv9 = Conv1D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
     conv9 = Conv1D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
-    conv10 = Conv1D(3, 1, activation='sigmoid')(conv9)
+    conv10 = Conv1D(4, 1, activation='sigmoid')(conv9)
 
     # (None, 512, 3) -----> (None, 3, 512)
     x=Permute((2,1))(conv10)
