@@ -1,5 +1,5 @@
 import numpy as np
-from utils import open_pickle
+from utils import open_pickle, get_addon_mask
 import matplotlib.pyplot as plt
 
 SHRINK_FACTOR = 2
@@ -94,11 +94,7 @@ def extract_first_leads(dataset_in):
 
 def get_mulimask_generator(segment_len, batch_size, dataset_in):
     """
-    генератор данных для аннотатора, внутри него произведена вся необходимая предобраотка экг/аннотиаций
-    :param segment_len:
-    :param batch_size:
-    :param dataset_in: датасет, представляет собой мапу с 2 ключами- 'х' и 'ann'
-    :return:
+     get_enhansed_ann_generator Для мултимасочной сегментации
     """
     dataset_only_one_channel = extract_first_leads(dataset_in)
     dataset_shrinked = shrink_dataset(dataset_only_one_channel)
@@ -128,13 +124,9 @@ def draw_shrinked():
     plt.savefig(figname)
 
 def annotated_multimask_generator(segment_len, batch_size, dataset_in):
-
     """
     ann_generator Для мултимасочной сегментации
     """
-
-    # open_pickle находится в utils для компактности
-
     ecg_dataset = np.array(dataset_in['x'])
     ecg_annotations = np.array(dataset_in['ann'])
 
@@ -147,21 +139,28 @@ def annotated_multimask_generator(segment_len, batch_size, dataset_in):
     starting_position = np.random.randint(offset, ecg_dataset.shape[1] - segment_len - offset)
     ending_position = starting_position + segment_len
     ecg_rand = np.random.randint(0, ecg_dataset.shape[0])
-
     while True:
-        batch_x = ecg_dataset[ecg_rand: ecg_rand +1, starting_position:ending_position, :]
+        batch_x = ecg_dataset[ecg_rand: ecg_rand + 1, starting_position:ending_position, :]
         batch_ann = np.array([ecg_annotations[ecg_rand, starting_position:ending_position, :]])
-        for i in range(0, batch_size- 1):
+
+        addition = get_addon_mask(ecg_annotations[ecg_rand:ecg_rand + 1, starting_position:ending_position, :])
+        batch_ann = np.concatenate((batch_ann, addition), 2)
+
+        for i in range(0, batch_size - 1):
             starting_position = np.random.randint(offset, ecg_dataset.shape[1] - segment_len - offset)
             ending_position = starting_position + segment_len
             ecg_rand = np.random.randint(0, ecg_dataset.shape[0])
             batch_x = np.concatenate(
                 (batch_x, ecg_dataset[ecg_rand:ecg_rand + 1, starting_position:ending_position, :]), 0)
-            batch_ann = np.concatenate(
-                (batch_ann, ecg_annotations[ecg_rand:ecg_rand + 1, starting_position:ending_position, :]), 0)
-        print(batch_x.shape, "batch_x shape")
-        print(batch_ann.shape, "batch_ann shape")
+
+            mask = get_addon_mask(ecg_annotations[ecg_rand:ecg_rand + 1, starting_position:ending_position, :])
+            addition = np.concatenate(
+                (ecg_annotations[ecg_rand:ecg_rand + 1, starting_position:ending_position, :], mask), 2)
+            batch_ann = np.concatenate((batch_ann, addition), 0)
+
         batch_ann = np.swapaxes(batch_ann, 1, 2)
+        #print(batch_x.shape, "batch_x shape")
+        #print(batch_ann.shape, "batch_ann shape")
         yield (batch_x, batch_ann)
 
 

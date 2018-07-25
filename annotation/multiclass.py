@@ -37,7 +37,6 @@ def get_generators(train_batch, test_batch):
     return my_generator_train, my_generator_test
 
 def get_model():
-    #return unet(seg_len=segment_len)
     return unet_multimask(seg_len=segment_len)
 
 
@@ -87,9 +86,9 @@ def test_model_multimask(model, batch, name):
 
     t = range(0, len(x[0]))
     for i in range(len(x)):
-        print (len(x[i]), "len x")
-        print (len(ann[i]), "len ann i")
-        print(ann[i].shape, "shape ann i")
+        #print (len(x[i]), "len x")
+        #print (len(ann[i]), "len ann i")
+        print(x[i].shape, "shape ann x_i")
         plot_name = "VIS" + name + "_" + str(i) + ".png"
         #f, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, sharey=False, sharex=False)
 
@@ -135,7 +134,7 @@ def test_model_multimask(model, batch, name):
 if __name__ == "__main__":
     name = "maria_annotator"
 
-    #train(name)
+    train(name)
     eval_models_in_folder(4)
 
 
