@@ -8,6 +8,7 @@ Created on Tue Jul 24 15:36:02 2018
 from keras.models import *
 from keras.layers import *
 from keras.optimizers import *
+from annotation.dice_koef import dice_coef
 
 # (None, 512, 12) -----> (None, 512, 3)
 def unet_multimask(seg_len):
@@ -55,11 +56,12 @@ def unet_multimask(seg_len):
     conv9 = Conv1D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge9)
     conv9 = Conv1D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
     conv9 = Conv1D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
-    conv10 = Conv1D(4, 1, activation='sigmoid')(conv9)
+    conv10 = Conv1D(4, 1, activation='relu')(conv9)
 
-    # (None, 512, 3) -----> (None, 3, 512)
+    # (None, 512, 4) -----> (None, 4, 512)
+   # x=Reshape((4,512))(conv10)
     x=Permute((2,1))(conv10)
-    # softmax for each row (3 channel) in 512
+    # softmax for each row (4 channel) in 512
     seg=Activation("softmax")(x)
 
     model = Model(inputs=inputs, outputs=seg, name="unet")
