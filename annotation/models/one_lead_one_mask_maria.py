@@ -3,9 +3,9 @@ from keras.layers import *
 from keras.optimizers import *
 
 from annotation.dice_koef import (
-    dice_coef, dice_coef_loss
-)
-# (None, 512, 1) -----> (None, 512, 1)
+    dice_coef, dice_coef_loss)
+	
+# 2,705,029 trainable parametres
 def unet_simple_maria(seg_len):
     input_size = (seg_len, 1)
     inputs = Input(input_size)
@@ -54,7 +54,7 @@ def unet_simple_maria(seg_len):
     merge9 = concatenate([conv1, up9], axis=2)
     conv9 = Conv1D(32, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge9)
     conv9 = Conv1D(32, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
-    conv9 = Conv1D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
+    #conv9 = Conv1D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
     conv10 = Conv1D(1, 1, activation='sigmoid')(conv9)
 
     model = Model(inputs=inputs, outputs=conv10, name="unet_maria")
