@@ -5,7 +5,7 @@ from keras.optimizers import *
 from annotation.dice_koef import (
     dice_coef, dice_coef_loss
 )
-# 2 705 029 trainabl parametres
+# (None, 512, 1) -----> (None, 512, 1)
 def unet_simple_maria(seg_len):
     input_size = (seg_len, 1)
     inputs = Input(input_size)
